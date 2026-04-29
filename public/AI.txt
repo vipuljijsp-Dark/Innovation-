@@ -1,0 +1,4 @@
+mongodb+srv://vipuljijsp_db_user:<db_password>@cluster0.uxrcajh.mongodb.net/?appName=Cluster0
+
+mongodb storage as online cloud
+replace db-password with password for the vipuljijsp_db_user

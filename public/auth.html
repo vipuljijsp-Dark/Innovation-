@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login / Signup</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .container {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 40px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 40px rgba(0, 217, 255, 0.2), inset 0 0 40px rgba(0, 217, 255, 0.05);
+      border: 1px solid rgba(0, 217, 255, 0.2);
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #00d9ff;
+      font-size: 28px;
+      text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+      letter-spacing: 1px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border: 2px solid rgba(0, 217, 255, 0.3);
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      color: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #00d9ff;
+      box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+      background: rgba(30, 41, 59, 0.95);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #00b4ff 0%, #0099ff 100%);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 153, 255, 0.3);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 153, 255, 0.5);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .toggle {
+      text-align: center;
+      margin-top: 16px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .toggle:hover {
+      color: #00d9ff;
+      text-decoration: underline;
+    }
+
+    #authMessage {
+      animation: messageSlide 0.3s ease-out;
+    }
+
+    @keyframes messageSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2 id="title">Login</h2>
+
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="submitForm()">Login</button>
+
+  <div class="toggle" onclick="toggleMode()">
+    Don't have an account? Signup
+  </div>
+</div>
+
+<script>
+let isLogin = true;
+
+function toggleMode() {
+  isLogin = !isLogin;
+  document.getElementById("title").innerText = isLogin ? "Login" : "Signup";
+  document.querySelector("button").innerText = isLogin ? "Login" : "Signup";
+  document.querySelector(".toggle").innerText = isLogin 
+    ? "Don't have an account? Signup" 
+    : "Already have an account? Login";
+  clearMessages();
+}
+
+function clearMessages() {
+  const messageDiv = document.getElementById("authMessage");
+  if (messageDiv) {
+    messageDiv.remove();
+  }
+}
+
+function showMessage(msg, isError = false) {
+  clearMessages();
+  const messageDiv = document.createElement("div");
+  messageDiv.id = "authMessage";
+  messageDiv.style.cssText = `
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    ${isError ? 'background: #fee; color: #c00;' : 'background: #efe; color: #0a0;'}
+  `;
+  messageDiv.textContent = msg;
+  document.querySelector(".container").insertBefore(messageDiv, document.querySelector("h2").nextSibling);
+}
+
+async function submitForm() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+
+  // Client-side validation
+  if (!username) {
+    showMessage("Please enter a username", true);
+    return;
+  }
+
+  if (username.length < 3) {
+    showMessage("Username must be at least 3 characters long", true);
+    return;
+  }
+
+  if (!password) {
+    showMessage("Please enter a password", true);
+    return;
+  }
+
+  if (password.length < 6 && !isLogin) {
+    showMessage("Password must be at least 6 characters long", true);
+    return;
+  }
+
+  // Disable button during submission
+  const button = document.querySelector("button");
+  button.disabled = true;
+  button.style.opacity = "0.6";
+  button.style.cursor = "not-allowed";
+
+  try {
+    const endpoint = isLogin ? '/auth/login' : '/auth/signup';
+    console.log(`Sending ${isLogin ? 'login' : 'signup'} request to ${endpoint}...`);
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+    console.log("Server response:", data);
+
+    if (response.ok) {
+      showMessage(isLogin ? "Login successful! Redirecting..." : "Signup successful! Please login now.", false);
+      
+      if (isLogin) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("currentUser", data.username);
+        localStorage.setItem("userId", data.userId);
+        
+        // Redirect to chat after 1 second
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1000);
+      } else {
+        // Switch to login mode after successful signup
+        setTimeout(() => {
+          document.getElementById("username").value = "";
+          document.getElementById("password").value = "";
+          toggleMode();
+          showMessage("Please login with your new account", false);
+        }, 1500);
+      }
+    } else {
+      showMessage(data.msg || "An error occurred", true);
+    }
+  } catch (error) {
+    console.error("Auth error:", error);
+    showMessage("Connection error. Please check if the server is running.", true);
+  } finally {
+    button.disabled = false;
+    button.style.opacity = "1";
+    button.style.cursor = "pointer";
+  }
+}
+
+// Allow Enter key to submit
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("password").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      submitForm();
+    }
+  });
+  
+  document.getElementById("username").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      submitForm();
+    }
+  });
+});
+</script>
+
+</body>
+</html>
